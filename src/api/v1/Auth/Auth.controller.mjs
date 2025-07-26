@@ -1,6 +1,5 @@
 import { request, response } from "express";
 import SendResponse from "../../../utils/SendResponse.mjs";
-import AuthenticationSchema from "./Auth.model.mjs";
 import AuthUtility from "./Auth.utils.mjs";
 import AuthConstant from "./Auth.constant.mjs";
 import StatusCodeConstant from "../../../constant/StatusCode.constant.mjs";
@@ -8,66 +7,54 @@ import envConstant from "../../../constant/env.constant.mjs";
 import userService from "../user/user.service.mjs";
 
 class AuthController {
-  /**
-   * Sign up a new admin user.
-   */
-  async SignUP_Admin(req, res) {
+ 
+  async SignUp(req, res) {
     try {
-      const { email ,  password} = req.body;
+      const { email, phone, role } = req.body;
 
-      
-      // Check if the user already exists
-      const existingUser = await userService.findUserByEmail(email);
+ 
+      const existingUser = await userService.findUserByEmailOrPhone(email, phone);
       if (existingUser) {
-       throw new Error(AuthConstant.USER_ALREADY_EXISTS);
+        throw new Error(AuthConstant.USER_ALREADY_EXISTS);
       }
 
-      // Hash the password
-      const hashedPassword = await AuthUtility.hashPassword(password);
-      const token = await AuthUtility.hashEmail(email);
+      
+      const otp = AuthUtility.generateOTP();
 
       // Create the user
       const createdUser = await userService.createUser({
         ...req.body,
-        token,
-        fileName: req.file?.filename,
+        otp,
       });
 
-      // Generate a token for the user
-
-      // Set the token as a cookie
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: envConstant.NODE_ENV === "production",
-        sameSite: envConstant.NODE_ENV === "production" ? "None" : "Lax",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
+ 
+      await AuthUtility.sendOTP(email, phone, otp);
 
       // Send the response
       SendResponse.success(
         res,
         StatusCodeConstant.CREATED,
-        AuthConstant.USER_CREATED,
-        { user: createdUser, token }
+        AuthConstant.OTP_SENT,
+        { userId: createdUser._id }
       );
     } catch (error) {
       SendResponse.error(
         res,
         StatusCodeConstant.INTERNAL_SERVER_ERROR,
-        error.message || "Error creating admin"
+        error.message || "Error signing up user"
       );
     }
   }
 
   /**
-   * Log in an existing user.
+   * Log in an existing user with OTP.
    */
   async Login(req = request, res = response) {
     try {
-      const { email, password } = req.body;
+      const { phone, otp } = req.body;
 
-      // Find the user by email
-      const user = await userService.findUserByEmail(email);
+      // Find the user by phone
+      const user = await userService.findUserByPhone(phone);
       if (!user) {
         return SendResponse.error(
           res,
@@ -76,21 +63,18 @@ class AuthController {
         );
       }
 
-      // Compare the provided password with the stored hashed password
-      const isPasswordValid = await AuthUtility.comparePassword(
-        password,
-        user.password
-      );
-      if (!isPasswordValid) {
+      // Validate the OTP
+      const isOtpValid = AuthUtility.validateOTP(otp, user.otp);
+      if (!isOtpValid) {
         return SendResponse.error(
           res,
           StatusCodeConstant.BAD_REQUEST,
-          AuthConstant.INVALID_PASSWORD
+          AuthConstant.INVALID_OTP
         );
       }
 
       // Generate a token for the user
-      const token = await AuthUtility.hashEmail(email);
+      const token = AuthUtility.generateToken(user.email);
 
       // Set the token as a cookie
       res.cookie("token", token, {
@@ -110,7 +94,7 @@ class AuthController {
           role: user.role,
           isActive: user.isActive,
           emailVerified: user.emailVerified,
-          phoneVerified: user.phoneVerified,
+          phoneVerified: true, // Mark phone as verified after successful OTP login
           profileImage: user.profileImage,
           token,
         },

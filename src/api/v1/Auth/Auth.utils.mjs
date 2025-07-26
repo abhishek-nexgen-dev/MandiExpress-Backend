@@ -4,11 +4,7 @@ import Authentication from "./Auth.model.mjs";
 import { SignUp_Validator } from "./Auth.validator.mjs";
 
 class AuthUtility {
-  /**
-   * Validates the sign-up data using Joi.
-   * @param {Object} data - The sign-up data.
-   * @returns {Boolean} - Returns true if validation passes.
-   */
+
   async SignUP_Validator({ name, email, password, confirm_Password }) {
     try {
       const { error } = SignUp_Validator.validate({
@@ -45,20 +41,18 @@ class AuthUtility {
     return Math.random().toString(36).slice(-8);
   }
 
-  /**
-   * Hashes a password using bcrypt.
-   * @param {String} password - The password to hash.
-   * @returns {String} - The hashed password.
-   */
+
+  async generateOTP() {
+    const otp = crypto.randomInt(100000, 999999).toString();
+    return otp;
+  }
+
+
   async hashPassword(password) {
     return await bcrypt.hash(password, 15);
   }
 
-  /**
-   * Hashes an email and generates a JWT token.
-   * @param {String} email - The email to hash.
-   * @returns {String} - The generated JWT token.
-   */
+  
   async hashEmail(email) {
     try {
       if (!email) {
@@ -75,12 +69,7 @@ class AuthUtility {
     }
   }
 
-  /**
-   * Compares a password with its hashed version.
-   * @param {String} password - The plain text password.
-   * @param {String} hash - The hashed password.
-   * @returns {Boolean} - True if the passwords match, otherwise false.
-   */
+
   async comparePassword(password, hash) {
     try {
       const match = await bcrypt.compare(password, hash);
@@ -93,11 +82,6 @@ class AuthUtility {
     }
   }
 
-  /**
-   * Checks the role of a user by email.
-   * @param {String} email - The email of the user.
-   * @returns {String} - The role of the user.
-   */
   async checkRole(email) {
     try {
       const user = await Authentication.findOne({ email });
@@ -110,11 +94,7 @@ class AuthUtility {
     }
   }
 
-  /**
-   * Decodes a JWT token and extracts the email.
-   * @param {String} token - The JWT token to decode.
-   * @returns {String} - The email extracted from the token.
-   */
+
   async DecodeToken(token) {
     try {
       if (!token) {

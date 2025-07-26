@@ -9,7 +9,7 @@ const ProductSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["auction", "direct"], // Auction or direct sale in auction give timer to bidding
+      enum: ["auction", "direct"], 
       default: "auction",
       required: true,
     },
@@ -57,6 +57,38 @@ const ProductSchema = new mongoose.Schema(
       ref: "User", // Reference to the User model
       required: true,
     },
+    supplierId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // Reference to the supplier
+      required: true,
+    },
+    bids: [
+      {
+        bidderId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User", // Reference to the bidder
+          required: true,
+        },
+        amount: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        bidTime: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    highestBid: {
+      type: Number,
+      default: 0, // Defaults to 0 or startPrice
+    },
+    highestBidder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // Reference to the highest bidder
+      required: false,
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -73,4 +105,4 @@ const ProductSchema = new mongoose.Schema(
 
 ProductSchema.index({ location: "2dsphere" }); // Geospatial index for location
 
-export default mongoose.model("product", ProductSchema);
+export default mongoose.model("Product", ProductSchema);

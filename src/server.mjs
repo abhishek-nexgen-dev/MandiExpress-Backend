@@ -1,7 +1,9 @@
 import morgan from "morgan";
-import { httpServer, Start_App } from "./config/Socket/SocketServer.mjs";
+import io, { httpServer, Start_App } from "./config/Socket/SocketServer.mjs";
 import app from "./routes/app.mjs";
 import envConstant from "./constant/env.constant.mjs";
+
+import SocketEvent from "./config/Socket/SocketEvent.mjs";
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", envConstant.FRONTEND_URL);
@@ -27,7 +29,7 @@ app.get('/', (req, res) => {
     });
 });
 
-
+io.on('connection', socket =>  SocketEvent(socket));
 
 
 app.use(morgan('dev'));

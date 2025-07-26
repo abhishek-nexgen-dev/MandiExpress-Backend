@@ -40,5 +40,6 @@ const Start_App = async () => {
 
 
 
-export { Start_App, httpServer, io, PORT };
+export { Start_App, httpServer, PORT };
+export default io;
 

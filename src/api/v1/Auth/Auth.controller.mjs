@@ -15,22 +15,14 @@ class AuthController {
       const { filename } = req.file || {};
       console.log("Received file:", filename);
 
-      
-   
-
-
       const existingUser = await AuthUtils.FindByEmail(email);
       if (existingUser) {
-       throw new Error(AuthConstant.USER_ALREADY_EXISTS);
+        throw new Error(AuthConstant.USER_ALREADY_EXISTS);
       }
 
-  
-  
-
-
       const newUser = await userService.createUser({
-       data: {...req.body },
-       ProfileImage: filename,
+        data: { ...req.body },
+        ProfileImage: filename,
       });
 
       if (!newUser) {
@@ -38,7 +30,6 @@ class AuthController {
       }
 
       const otp = await OtpService.generateOtp(email);
-
 
       await OtpService.sendOtpEmail(email, otp, name);
 
@@ -58,34 +49,14 @@ class AuthController {
     }
   }
 
-  /**
-   * Log in an existing user with OTP.
-   */
-  async Login(req = request, res = response) {
+
+ 
+  async sendLoginOtp(req = request, res = response) {
     try {
       const { email } = req.body;
 
 
-   const isActive = await AuthUtils.isUserActive(email);
-   console.log("User active status:", isActive);
-
-   if (!isActive) {
-       throw new Error('User is not active. Please activate your account first.');
-    }
-
-
-      // // Validate OTP
-      const isOtpValid = await OtpService.validateOtp(email, otp);
-      if (!isOtpValid) {
-        return SendResponse.error(
-          res,
-          StatusCodeConstant.BAD_REQUEST,
-          AuthConstant.INVALID_OTP
-        );
-      }
-
-      // // Find the user by email
-      const user = await userService.findUserByEmail(email);
+      const user = await AuthUtils.FindByEmail(email);
       if (!user) {
         return SendResponse.error(
           res,
@@ -94,16 +65,58 @@ class AuthController {
         );
       }
 
-      // // Activate the user if not already active
+ 
+      const otp = await OtpService.generateOtp(email);
+
+
+      await OtpService.sendOtpEmail(email, otp, user.name);
+
+      SendResponse.success(
+        res,
+        StatusCodeConstant.SUCCESS,
+        'OTP sent successfully.',
+        { email }
+      );
+    } catch (error) {
+      console.error("Error during sending login OTP:", error);
+      SendResponse.error(
+        res,
+        StatusCodeConstant.INTERNAL_SERVER_ERROR,
+        error.message || "Error sending login OTP"
+      );
+    }
+  }
+
+
+  async validateLoginOtp(req = request, res = response) {
+    try {
+      const { email, otp } = req.body;
+      
+      const user = await AuthUtils.FindByEmail(email);
+
+      if (!user) {
+       throw new Error(AuthConstant.USER_NOT_FOUND);
+      }
+
+
+      const isOtpValid = await OtpService.validateOtp(email, otp);
+      if (!isOtpValid) {
+       throw new Error('Invalid OTP or email.');
+      }
+
+    
+    
+
+      
       if (!user.isActive) {
         user.isActive = true;
         await user.save();
       }
 
-      // // Generate a token for the user
-      const token = AuthUtility.generateToken(user.email);
 
-      // // Set the token as a cookie
+      const token = AuthUtils.generateToken(user.email);
+
+ 
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -111,7 +124,7 @@ class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      // // Prepare the response data
+ 
       const data = {
         user: {
           _id: user._id,
@@ -119,7 +132,7 @@ class AuthController {
           email: user.email,
           role: user.role,
           isActive: user.isActive,
-          emailVerified: true, // Mark email as verified after successful OTP login
+          emailVerified: true, 
           profileImage: user.profileImage,
           token,
         },
@@ -132,10 +145,11 @@ class AuthController {
         data
       );
     } catch (error) {
+      console.error("Error during OTP validation for login:", error);
       SendResponse.error(
         res,
         StatusCodeConstant.INTERNAL_SERVER_ERROR,
-        error.message || "Error logging in user"
+        error.message || "Error validating login OTP"
       );
     }
   }

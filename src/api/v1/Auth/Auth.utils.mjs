@@ -100,6 +100,22 @@ class AuthUtility {
       throw new Error(`Error decoding token: ${error.message}`);
     }
   }
+
+  async generateToken(email) {
+    try {
+      if (!email) {
+        throw new Error("Email is required to generate a token.");
+      }
+
+      const token = jwt.sign({ email }, process.env.JWT_SECRET, {
+        expiresIn: "12h",
+      });
+
+      return token;
+    } catch (error) {
+      throw new Error(`Error generating token: ${error.message}`);
+    }
+  }
 }
 
 export default new AuthUtility();

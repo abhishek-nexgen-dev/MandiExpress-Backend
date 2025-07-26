@@ -27,9 +27,8 @@ An OTP is sent to the user's phone or email for verification.
 | `name`         | String | ✅ Yes   | Full name of the user                                                       |
 | `email`        | String | ✅ Yes   | Unique, valid email address                                                 |
 | `phone`        | String | ✅ Yes   | Unique 10-digit phone number                                                |
-| `otp`          | String | ✅ Yes   | One-Time Password sent to the user's phone or email                        |
 | `role`         | String | ✅ Yes   | One of: `supplier`, `vendor`, `admin`, `customer`                          |
-| `location`     | Object | ✅ No    | GeoJSON object with type `"Point"` and coordinates `[longitude, latitude]` |
+| `location`     | Object | ❌ No    | GeoJSON object with type `"Point"` and coordinates `[longitude, latitude]` |
 | `profileImage` | String | ❌ No    | URL of the profile picture (optional)                                      |
 
 ---
@@ -41,7 +40,6 @@ An OTP is sent to the user's phone or email for verification.
   "name": "Ramesh Verma",
   "email": "ramesh@example.com",
   "phone": "9876543210",
-  "otp": "123456",
   "role": "supplier",
   "location": {
     "type": "Point",

@@ -21,10 +21,7 @@ class AuthUtility {
   }
 
 
-  async generateOTP() {
-    const otp =  Crypto.randomInt(100000, 999999).toString();
-    return otp;
-  }
+
 
 
   async hashPassword(password) {

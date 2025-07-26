@@ -1,45 +1,48 @@
 import { request, response } from "express";
 import SendResponse from "../../../utils/SendResponse.mjs";
-import AuthUtility from "./Auth.utils.mjs";
 import AuthConstant from "./Auth.constant.mjs";
 import StatusCodeConstant from "../../../constant/StatusCode.constant.mjs";
-import envConstant from "../../../constant/env.constant.mjs";
 import userService from "../user/user.service.mjs";
-import AuthService from "./Auth.service.mjs";
+import OtpService from "../Otp/Otp.service.mjs";
 
 class AuthController {
- 
+  /**
+   * Sign up a new user with OTP-based authentication.
+   */
   async SignUp(req, res) {
     try {
-      const { email } = req.body;
+      const { email, name, role } = req.body;
 
- 
-      const existingUser = await AuthUtility.FindByEmail(email);
-      // if (existingUser) {
-      //   throw new Error(AuthConstant.USER_ALREADY_EXISTS);
-      // }
+      // Check if the user already exists
+      const existingUser = await userService.findUserByEmail(email);
+      if (existingUser) {
+        return SendResponse.error(
+          res,
+          StatusCodeConstant.BAD_REQUEST,
+          AuthConstant.USER_ALREADY_EXISTS
+        );
+      }
 
-      
-      const otp = await AuthUtility.generateOTP();
-      console.log(`Generated OTP: ${otp} for email: ${email}`);
+      // Generate OTP
+      const otp = await OtpService.generateOtp(email);
 
-      // Create the user
-      // const createdUser = await userService.createUser({
-      //   ...req.body,
-      //   otp,
-      // });
+      // Send OTP to the user's email
+      await OtpService.sendOtpEmail(email, otp, name);
 
- 
-      let a = await AuthService.sendOTP(email, otp, 'ffff');
-      console.log('a', a);
+      // Create a new user (inactive until OTP is validated)
+      const newUser = await userService.createUser({
+        email,
+        name,
+        role,
+        isActive: false, // User will be activated after OTP validation
+      });
 
-      // Send the response
-      // SendResponse.success(
-      //   res,
-      //   StatusCodeConstant.CREATED,
-      //   AuthConstant.OTP_SENT,
-      //   { userId: createdUser._id }
-      // );
+      SendResponse.success(
+        res,
+        StatusCodeConstant.CREATED,
+        AuthConstant.OTP_SENT,
+        { userId: newUser._id, email }
+      );
     } catch (error) {
       SendResponse.error(
         res,
@@ -54,20 +57,10 @@ class AuthController {
    */
   async Login(req = request, res = response) {
     try {
-      const { phone, otp } = req.body;
+      const { email, otp } = req.body;
 
-      // Find the user by phone
-      const user = await userService.findUserByPhone(phone);
-      if (!user) {
-        return SendResponse.error(
-          res,
-          StatusCodeConstant.BAD_REQUEST,
-          AuthConstant.USER_NOT_FOUND
-        );
-      }
-
-      // Validate the OTP
-      const isOtpValid = AuthUtility.validateOTP(otp, user.otp);
+      // Validate OTP
+      const isOtpValid = await OtpService.validateOtp(email, otp);
       if (!isOtpValid) {
         return SendResponse.error(
           res,
@@ -76,14 +69,30 @@ class AuthController {
         );
       }
 
+      // Find the user by email
+      const user = await userService.findUserByEmail(email);
+      if (!user) {
+        return SendResponse.error(
+          res,
+          StatusCodeConstant.BAD_REQUEST,
+          AuthConstant.USER_NOT_FOUND
+        );
+      }
+
+      // Activate the user if not already active
+      if (!user.isActive) {
+        user.isActive = true;
+        await user.save();
+      }
+
       // Generate a token for the user
       const token = AuthUtility.generateToken(user.email);
 
       // Set the token as a cookie
       res.cookie("token", token, {
         httpOnly: true,
-        secure: envConstant.NODE_ENV === "production",
-        sameSite: envConstant.NODE_ENV === "production" ? "None" : "Lax",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
@@ -93,17 +102,14 @@ class AuthController {
           _id: user._id,
           name: user.name,
           email: user.email,
-          phone: user.phone,
           role: user.role,
           isActive: user.isActive,
-          emailVerified: user.emailVerified,
-          phoneVerified: true, // Mark phone as verified after successful OTP login
+          emailVerified: true, // Mark email as verified after successful OTP login
           profileImage: user.profileImage,
           token,
         },
       };
 
-      // Send the response
       SendResponse.success(
         res,
         StatusCodeConstant.SUCCESS,

@@ -5,38 +5,41 @@ import AuthConstant from "./Auth.constant.mjs";
 import StatusCodeConstant from "../../../constant/StatusCode.constant.mjs";
 import envConstant from "../../../constant/env.constant.mjs";
 import userService from "../user/user.service.mjs";
+import AuthService from "./Auth.service.mjs";
 
 class AuthController {
  
   async SignUp(req, res) {
     try {
-      const { email, phone, role } = req.body;
+      const { email } = req.body;
 
  
-      const existingUser = await userService.findUserByEmailOrPhone(email, phone);
-      if (existingUser) {
-        throw new Error(AuthConstant.USER_ALREADY_EXISTS);
-      }
+      const existingUser = await AuthUtility.FindByEmail(email);
+      // if (existingUser) {
+      //   throw new Error(AuthConstant.USER_ALREADY_EXISTS);
+      // }
 
       
-      const otp = AuthUtility.generateOTP();
+      const otp = await AuthUtility.generateOTP();
+      console.log(`Generated OTP: ${otp} for email: ${email}`);
 
       // Create the user
-      const createdUser = await userService.createUser({
-        ...req.body,
-        otp,
-      });
+      // const createdUser = await userService.createUser({
+      //   ...req.body,
+      //   otp,
+      // });
 
  
-      await AuthUtility.sendOTP(email, phone, otp);
+      let a = await AuthService.sendOTP(email, otp, 'ffff');
+      console.log('a', a);
 
       // Send the response
-      SendResponse.success(
-        res,
-        StatusCodeConstant.CREATED,
-        AuthConstant.OTP_SENT,
-        { userId: createdUser._id }
-      );
+      // SendResponse.success(
+      //   res,
+      //   StatusCodeConstant.CREATED,
+      //   AuthConstant.OTP_SENT,
+      //   { userId: createdUser._id }
+      // );
     } catch (error) {
       SendResponse.error(
         res,

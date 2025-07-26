@@ -4,7 +4,7 @@ import envConstant from '../constant/env.constant.mjs';
 import { transform } from 'zod';
 dotenv.config();
 
-export let createTransport = () => {
+export let Gmail = () => {
   try {
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
@@ -22,4 +22,7 @@ export let createTransport = () => {
   }
 };
 
-export default transform
+
+
+
+

@@ -1,36 +1,15 @@
 import jwt from "jsonwebtoken";
+import Crypto from "crypto";
 import bcrypt from "bcryptjs";
-import Authentication from "./Auth.model.mjs";
-import { SignUp_Validator } from "./Auth.validator.mjs";
+import userSchema from "../user/user.schema.mjs";
 
 class AuthUtility {
 
-  async SignUP_Validator({ name, email, password, confirm_Password }) {
-    try {
-      const { error } = SignUp_Validator.validate({
-        name,
-        email,
-        password,
-        confirm_Password,
-      });
 
-      if (error) {
-        throw new Error(error.message);
-      }
 
-      return true;
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  /**
-   * Finds a user by email in the Authentication collection.
-   * @param {String} email - The email to search for.
-   * @returns {Object|null} - The user document or null if not found.
-   */
+ 
   async FindByEmail(email) {
-    return Authentication.findOne({ email });
+    return userSchema.findOne({ email });
   }
 
   /**
@@ -43,7 +22,7 @@ class AuthUtility {
 
 
   async generateOTP() {
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const otp =  Crypto.randomInt(100000, 999999).toString();
     return otp;
   }
 
@@ -84,7 +63,7 @@ class AuthUtility {
 
   async checkRole(email) {
     try {
-      const user = await Authentication.findOne({ email });
+      const user = await userSchema.findOne({ email });
       if (!user) {
         throw new Error("User not found.");
       }

@@ -75,8 +75,8 @@ const userSchema = new mongoose.Schema({
 
 // Index for geospatial queries
 userSchema.index({ location: '2dsphere' });
-userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ phone: 1 }, { unique: true });
+userSchema.index('email');
+userSchema.index('phone');
 
 // Middleware to hash password before saving
 userSchema.pre('save', async function (next) {

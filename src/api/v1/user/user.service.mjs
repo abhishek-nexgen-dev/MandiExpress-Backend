@@ -6,6 +6,38 @@ import userSchema from "./user.schema.mjs";
 import { createUserValidator } from "./user.validator.mjs";
 
 class User_Service {
+
+  async createUser(data , fileName) {
+    try {
+  
+
+ 
+        await createUserValidator.safeParseAsync(data);
+
+
+        const upload = await uploadOnCloudinary(fileName);
+
+    
+        const userData = { ...data, profileImage: upload.url };
+
+       
+        const createdUser = await userSchema.create(userData);
+
+     
+        SendResponse.success(
+            res,
+            StatusCodeConstant.CREATED,
+            userConstant.USER_CREATED,
+            createdUser
+        );
+
+    } catch (error) {
+
+        SendResponse.error(res, StatusCodeConstant.INTERNAL_SERVER_ERROR, error.message);
+    }
+}
+
+
  
   _getCoordinates(location) {
     if (Array.isArray(location)) {

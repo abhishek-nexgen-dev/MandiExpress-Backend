@@ -23,6 +23,7 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "genai": "link:\u001b[200~@google/genai",
+    "jwt": "^0.2.0",
     "lolcat": "^1.0.0",
     "lolcatjs": "^2.4.3",
     "mongoose": "^8.16.5",

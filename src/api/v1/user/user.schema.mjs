@@ -1,5 +1,7 @@
 import argon2 from 'argon2';
 import mongoose, { model } from 'mongoose';
+import { token } from 'morgan';
+import { Socket } from 'socket.io';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -28,6 +30,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['supplier', 'vendor', 'admin', 'customer'],
     required: true,
+  },
+  token : {
+    type: String,
+    required: false, // Optional, can be used for session management
+  },
+
+  Socket  : {
+    type: String,
+    required: false, // Optional, can be used for real-time communication
   },
   location: {
     type: {

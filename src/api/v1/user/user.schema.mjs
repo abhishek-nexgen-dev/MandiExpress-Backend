@@ -1,3 +1,4 @@
+import argon2 from 'argon2';
 import mongoose, { model } from 'mongoose';
 
 const userSchema = new mongoose.Schema({
@@ -66,10 +67,12 @@ const userSchema = new mongoose.Schema({
 
 // Index for geospatial queries
 userSchema.index({ location: '2dsphere' });
+userSchema.index({ email: 1 }, { unique: true });
 
 // Middleware to update `updatedAt` on save
 userSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
+  this.password = argon2.hash(this.password)
   next();
 });
 

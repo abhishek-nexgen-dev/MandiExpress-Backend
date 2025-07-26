@@ -1,0 +1,29 @@
+{
+  "name": "mandiexpress-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.mjs",
+    "dev": "nodemon src/server.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "cloudinary": "^2.7.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "lolcat": "^1.0.0",
+    "lolcatjs": "^2.4.3",
+    "mongoose": "^8.16.5",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^7.0.5",
+    "socket.io": "^4.8.1",
+    "zod": "^4.0.10"
+  }
+}

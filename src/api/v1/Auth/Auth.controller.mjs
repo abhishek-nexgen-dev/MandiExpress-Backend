@@ -6,6 +6,7 @@ import StatusCodeConstant from "../../../constant/StatusCode.constant.mjs";
 import userService from "../user/user.service.mjs";
 import OtpService from "../Otp/Otp.service.mjs";
 import AuthUtils from "./Auth.utils.mjs";
+import AuthService from "./Auth.service.mjs";
 
 class AuthController {
 
@@ -91,7 +92,7 @@ class AuthController {
   async validateLoginOtp(req = request, res = response) {
     try {
       const { email, otp } = req.body;
-      
+
       const user = await AuthUtils.FindByEmail(email);
 
       if (!user) {
@@ -104,17 +105,12 @@ class AuthController {
        throw new Error('Invalid OTP or email.');
       }
 
-    
-    
-
-      
-      if (!user.isActive) {
+      if (!user.isActive && !user.emailVerified) {
+        await userService.updateUser(email, { isActive: true, emailVerified: true });
         user.isActive = true;
-        await user.save();
       }
 
-
-      const token = AuthUtils.generateToken(user.email);
+      const token = await AuthUtils.generateToken(user.email);
 
  
       res.cookie("token", token, {
@@ -124,6 +120,10 @@ class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
+
+      let update_Token = await AuthService.UpdateUserToken(user.email, String(token));
+
+     
  
       const data = {
         user: {
@@ -134,7 +134,7 @@ class AuthController {
           isActive: user.isActive,
           emailVerified: true, 
           profileImage: user.profileImage,
-          token,
+          token: update_Token,
         },
       };
 

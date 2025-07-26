@@ -77,35 +77,79 @@ An OTP is sent to the user's phone or email for verification.
 }
 ```
 
-#### For Invalid OTP
-
-```json
-{
-  "status": "error",
-  "statusCode": 400,
-  "message": "Invalid OTP"
-}
-```
-
 ---
 
-### 2. **Login**
+### 2. **Send OTP for Login**
 
-Authenticates an existing user using their phone or email and an OTP.  
-If the OTP is valid, a JWT token is generated and returned.
+Generates and sends an OTP to the user's registered email for login.
 
 #### Endpoint
 
-`POST /api/v1/auth/Login`
+`POST /api/v1/auth/send-login-otp`
 
 ---
 
 ### 📥 Request Body (JSON)
 
-| Field      | Type   | Required | Description                     |
-|------------|--------|----------|---------------------------------|
-| `email`    | String | ✅ Yes   | Registered email address        |
-| `otp`      | String | ✅ Yes   | One-Time Password sent to the user |
+| Field   | Type   | Required | Description                     |
+|---------|--------|----------|---------------------------------|
+| `email` | String | ✅ Yes   | Registered email address        |
+
+---
+
+### Example Request
+
+```json
+{
+  "email": "ramesh@example.com"
+}
+```
+
+---
+
+### 📤 Response (JSON)
+
+#### For Successful OTP Generation
+
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "message": "OTP sent successfully.",
+  "data": {
+    "email": "ramesh@example.com"
+  }
+}
+```
+
+#### For Non-Existent User
+
+```json
+{
+  "status": "error",
+  "statusCode": 400,
+  "message": "User not found."
+}
+```
+
+---
+
+### 3. **Validate OTP and Login**
+
+Validates the OTP sent to the user's email and logs the user in if the OTP is valid. A JWT token is generated and returned.
+
+#### Endpoint
+
+`POST /api/v1/auth/validate-login-otp`
+
+---
+
+### 📥 Request Body (JSON)
+
+| Field   | Type   | Required | Description                     |
+|---------|--------|----------|---------------------------------|
+| `email` | String | ✅ Yes   | Registered email address        |
+| `otp`   | String | ✅ Yes   | One-Time Password sent to the user |
 
 ---
 
@@ -118,7 +162,73 @@ If the OTP is valid, a JWT token is generated and returned.
 }
 ```
 
+---
 
+### 📤 Response (JSON)
+
+#### For Successful Login
+
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "message": "User login successful.",
+  "data": {
+    "user": {
+      "_id": "64c0f9f4e4b0a5d6c8f9e123",
+      "name": "Ramesh Verma",
+      "email": "ramesh@example.com",
+      "role": "supplier",
+      "isActive": true,
+      "emailVerified": true,
+      "profileImage": "https://example.com/images/ramesh.png",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+  }
+}
+```
+
+#### For Invalid OTP
+
+```json
+{
+  "status": "error",
+  "statusCode": 400,
+  "message": "Invalid OTP."
+}
+```
+
+#### For Expired OTP
+
+```json
+{
+  "status": "error",
+  "statusCode": 400,
+  "message": "OTP has expired."
+}
+```
+
+---
+
+## 🛠️ Notes
+
+1. **Rate Limiting**:
+   - Implement rate limiting on the `/send-login-otp` endpoint to prevent abuse.
+
+2. **Security**:
+   - Use HTTPS to secure communication between the client and server.
+   - Ensure OTPs are securely generated and validated.
+
+3. **Token**:
+   - The `token` field in the response is a JWT token that can be used for subsequent authenticated requests.
+
+4. **Error Handling**:
+   - Handle edge cases like invalid OTPs, expired OTPs, and non-existent users gracefully.
+
+5. **Testing**:
+   - Test the entire flow, including sending OTPs, validating OTPs, and handling invalid/expired OTPs.
+
+---
 
 # 🛒 Product Management API
 
@@ -207,7 +317,6 @@ For auction-based products, bidding functionality is supported.
   "highestBidder": "64c0f9f4e4b0a5d6c8f9e456"
 }
 ```
-
 
 ## 🛠️ Notes
 

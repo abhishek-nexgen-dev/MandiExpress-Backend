@@ -2,8 +2,9 @@ import OtpService from './Otp.service.mjs';
 import SendResponse from '../../../utils/SendResponse.mjs';
 import StatusCodeConstant from '../../../constant/StatusCode.constant.mjs';
 import userSchema from '../user/user.schema.mjs';
-import userService from '../user/user.service.mjs';
+
 import AuthUtils from '../Auth/Auth.utils.mjs';
+
 
 class OtpController {
 
@@ -58,6 +59,8 @@ class OtpController {
           }}
         );
       }
+
+     
 
    
 

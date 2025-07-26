@@ -82,6 +82,8 @@ class AuthUtility {
     }
   }
 
+  
+
 
   async DecodeToken(token) {
     try {

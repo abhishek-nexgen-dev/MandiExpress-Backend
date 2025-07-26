@@ -1,47 +1,94 @@
-import { GoogleGenAI } from "@google/genai";
-import fs from "fs";
-import path from "path";
-import User_Controller from "../user/user.controller.mjs";
-import envConstant from "../../../constant/env.constant.mjs";
+// File: src/api/v1/ai/ai.service.mjs
 
-const ai = new GoogleGenAI({
-    apiKey: envConstant.GEMINI_API_KEY,
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import userService from "../user/user.service.mjs";
+import envConstant from "../../../constant/env.constant.mjs";
+import tools from "./ai.tool.mjs";
+
+const genAI = new GoogleGenerativeAI(envConstant.GEMINI_API_KEY);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash-latest",
+  tools: tools,
+  
+
 });
 
 class Ai_Service {
-    async chatWithAI(aiData) {
-        try {
-            // Resolve the path to the AI prompt file
-            const promptPath = path.resolve("src/api/v1/ai/ai.prompt.text");
-            const prompt = fs.readFileSync(promptPath, "utf8");
+  async chatWithAI(aiData) {
+    try {
+      const chat = model.startChat({
+        history: [],
+      });
 
-            // Fetch user data using User_Controller
-            // const user = await User_Controller.getUserById(aiData.userId);
-            // if (!user) {
-            //     throw new Error("User not found");
-            // }
+      const userMessage = aiData.message || "Find suppliers near me";
 
-            let user = {
-                name: "John Doe",
-                // id: aiData.userId || "12345",
-            };
 
-            // Generate content using Google GenAI
-            const response = await ai.models.generateContent({
-                model: "gemini-2.5-flash",
-                contents: prompt,
-                config: {
-                    systemInstruction: `You are assisting ${user.name}.`,
+      const result = await chat.sendMessage(userMessage);
+      const response = result.response;
+
+
+      const functionCall = response.functionCalls()?.[0];
+
+      if (functionCall) {
+        const { name, args } = functionCall;
+        console.log(`🤖 AI wants to call the tool: ${name}(${JSON.stringify(args)})`);
+
+        if (name === "findSupplierNearLocation") {
+          const locationName = args.location?.trim();
+
+
+          if (!locationName || (locationName.split(" ").length === 1 && !locationName.includes(","))) {
+            const clarificationMessage = `The location "${locationName}" is too vague. Please include the state or country (e.g., "Chatra, Jharkhand, India").`;
+            await chat.sendMessage(clarificationMessage);
+            return clarificationMessage;
+          }
+
+
+          const dbResult = await userService.findSupplierNearLocationByLocationName(
+            locationName,
+            { page: 1, limit: 5 },
+            5000
+          );
+
+
+          const suppliersArray = dbResult || [];
+
+          const functionResponseResult = await chat.sendMessage([
+            {
+              functionResponse: {
+                name: "findSupplierNearLocation",
+                response: {
+                  suppliers: dbResult,
+                  
+                  count: suppliersArray.length,
+                  message: suppliersArray.length > 0
+                    ? `Found ${suppliersArray.length} suppliers near ${locationName}.`
+                    : `No suppliers found near "${locationName}".`,
                 },
-            });
+              },
+            },
+          ]);
 
-            console.log(response.text);
-            return response.text;
-        } catch (error) {
-            // Handle any errors that occur during the process
-            throw new Error(error.message || "AI content generation failed");
+          const aiReply = functionResponseResult.response.text();
+
+          return {
+            prompt: userMessage,
+            response: aiReply,
+            suppliers: suppliersArray,
+          };
         }
+      }
+
+
+      return response.text();
+
+    } catch (error) {
+      console.error("AI Service Error:", error.message);
+      throw new Error(error.message || "AI content generation failed");
     }
+  }
 }
+
 
 export default new Ai_Service();

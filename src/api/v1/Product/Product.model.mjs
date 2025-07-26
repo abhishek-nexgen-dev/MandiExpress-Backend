@@ -93,6 +93,10 @@ const ProductSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    pin: {
+      type: Boolean , // Indicates if the product is pinned
+      default: false,
+    },
     updatedAt: {
       type: Date,
       default: Date.now,

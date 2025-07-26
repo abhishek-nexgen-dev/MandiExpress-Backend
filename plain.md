@@ -1,26 +1,30 @@
-# 👤 User Authentication API
+# 📘 MandiExpress Backend API Documentation
 
-## 🧾 Description
-
-This document provides details about the **Sign Up** and **Login** APIs for user authentication in the MandiExpress backend.  
-The authentication system uses OTP (One-Time Password) for verification instead of a traditional password.
+This document provides details about the APIs for **User Authentication**, **Product Management**, and **Category Management** in the MandiExpress backend.
 
 ---
 
-## 🚀 Endpoints
+## 👤 User Authentication API
 
-### 1. **Sign Up**
+### 🧾 Description
+
+The authentication system uses OTP (One-Time Password) for verification instead of a traditional password.  
+Users can sign up, log in, and validate OTPs for authentication.
+
+---
+
+### 🚀 Endpoints
+
+#### 1. **Sign Up**
 
 Registers a new user (**supplier**, **vendor**, **admin**, or **customer**) with all required details including location, phone, and role.  
 An OTP is sent to the user's phone or email for verification.
 
-#### Endpoint
-
-`POST /api/v1/auth/SignUp`
+**Endpoint**: `POST /api/v1/auth/SignUp`
 
 ---
 
-### 📥 Request Body (JSON)
+#### 📥 Request Body (JSON)
 
 | Field          | Type   | Required | Description                                                                 |
 |----------------|--------|----------|-----------------------------------------------------------------------------|
@@ -33,27 +37,9 @@ An OTP is sent to the user's phone or email for verification.
 
 ---
 
-### Example Request
+#### 📤 Response (JSON)
 
-```json
-{
-  "name": "Ramesh Verma",
-  "email": "ramesh@example.com",
-  "phone": "9876543210",
-  "role": "supplier",
-  "location": {
-    "type": "Point",
-    "coordinates": [77.1234, 28.5678]
-  },
-  "profileImage": "https://example.com/images/ramesh.png"
-}
-```
-
----
-
-### 📤 Response (JSON)
-
-#### For Successful Sign Up
+**For Successful Sign Up**:
 
 ```json
 {
@@ -79,17 +65,15 @@ An OTP is sent to the user's phone or email for verification.
 
 ---
 
-### 2. **Send OTP for Login**
+#### 2. **Send OTP for Login**
 
 Generates and sends an OTP to the user's registered email for login.
 
-#### Endpoint
-
-`POST /api/v1/auth/send-login-otp`
+**Endpoint**: `POST /api/v1/auth/send-login-otp`
 
 ---
 
-### 📥 Request Body (JSON)
+#### 📥 Request Body (JSON)
 
 | Field   | Type   | Required | Description                     |
 |---------|--------|----------|---------------------------------|
@@ -97,19 +81,9 @@ Generates and sends an OTP to the user's registered email for login.
 
 ---
 
-### Example Request
+#### 📤 Response (JSON)
 
-```json
-{
-  "email": "ramesh@example.com"
-}
-```
-
----
-
-### 📤 Response (JSON)
-
-#### For Successful OTP Generation
+**For Successful OTP Generation**:
 
 ```json
 {
@@ -122,29 +96,17 @@ Generates and sends an OTP to the user's registered email for login.
 }
 ```
 
-#### For Non-Existent User
-
-```json
-{
-  "status": "error",
-  "statusCode": 400,
-  "message": "User not found."
-}
-```
-
 ---
 
-### 3. **Validate OTP and Login**
+#### 3. **Validate OTP and Login**
 
 Validates the OTP sent to the user's email and logs the user in if the OTP is valid. A JWT token is generated and returned.
 
-#### Endpoint
-
-`POST /api/v1/auth/validate-login-otp`
+**Endpoint**: `POST /api/v1/auth/validate-login-otp`
 
 ---
 
-### 📥 Request Body (JSON)
+#### 📥 Request Body (JSON)
 
 | Field   | Type   | Required | Description                     |
 |---------|--------|----------|---------------------------------|
@@ -153,20 +115,9 @@ Validates the OTP sent to the user's email and logs the user in if the OTP is va
 
 ---
 
-### Example Request
+#### 📤 Response (JSON)
 
-```json
-{
-  "email": "ramesh@example.com",
-  "otp": "123456"
-}
-```
-
----
-
-### 📤 Response (JSON)
-
-#### For Successful Login
+**For Successful Login**:
 
 ```json
 {
@@ -188,72 +139,28 @@ Validates the OTP sent to the user's email and logs the user in if the OTP is va
 }
 ```
 
-#### For Invalid OTP
+---
 
-```json
-{
-  "status": "error",
-  "statusCode": 400,
-  "message": "Invalid OTP."
-}
-```
+## 🛒 Product Management API
 
-#### For Expired OTP
+### 🧾 Description
 
-```json
-{
-  "status": "error",
-  "statusCode": 400,
-  "message": "OTP has expired."
-}
-```
+This document provides details about the **Create Product** API for managing products in the MandiExpress backend, including support for auction-based bidding.
 
 ---
 
-## 🛠️ Notes
+### 🚀 Endpoints
 
-1. **Rate Limiting**:
-   - Implement rate limiting on the `/send-login-otp` endpoint to prevent abuse.
-
-2. **Security**:
-   - Use HTTPS to secure communication between the client and server.
-   - Ensure OTPs are securely generated and validated.
-
-3. **Token**:
-   - The `token` field in the response is a JWT token that can be used for subsequent authenticated requests.
-
-4. **Error Handling**:
-   - Handle edge cases like invalid OTPs, expired OTPs, and non-existent users gracefully.
-
-5. **Testing**:
-   - Test the entire flow, including sending OTPs, validating OTPs, and handling invalid/expired OTPs.
-
----
-
-# 🛒 Product Management API
-
-## 🧾 Description
-
-This document provides details about the **Create Product** API for managing products in the MandiExpress backend, including support for auction-based bidding.  
-If a product is already available, other vendors cannot create a duplicate product but can place bids on the existing product.
-
----
-
-## 🚀 Endpoints
-
-### 1. **Create Product**
+#### 1. **Create Product**
 
 Creates a new product for auction or direct sale.  
-The product includes details like title, type, quantity, price, location, and more.  
-For auction-based products, bidding functionality is supported.
+The product includes details like title, type, quantity, price, location, and more.
 
-#### Endpoint
-
-`POST /api/v1/product/create`
+**Endpoint**: `POST /api/v1/vendor/product/create`
 
 ---
 
-### 📥 Request Body (JSON)
+#### 📥 Request Body (JSON)
 
 | Field          | Type   | Required | Description                                                                 |
 |----------------|--------|----------|-----------------------------------------------------------------------------|
@@ -266,65 +173,199 @@ For auction-based products, bidding functionality is supported.
 | `status`       | String | ❌ No    | One of: `open`, `closed`, `expired` (default: `open`)                      |
 | `image`        | String | ❌ No    | URL of the product image (optional)                                        |
 | `description`  | String | ❌ No    | Description of the product (optional)                                      |
-| `createdBy`    | String | ✅ Yes   | User ID of the creator (reference to the `User` model)                     |
-| `supplierId`   | String | ✅ Yes   | User ID of the supplier who owns the product                               |
 
 ---
 
-### 📥 Additional Fields for Auctions
+#### 📤 Response (JSON)
 
-| Field           | Type   | Required | Description                                                                 |
-|-----------------|--------|----------|-----------------------------------------------------------------------------|
-| `bids`          | Array  | ❌ No    | List of bids placed on the product. Each bid includes `bidderId`, `supplierId`, `amount`, and `bidTime`. |
-| `highestBid`    | Number | ❌ No    | The highest bid amount for the product. Defaults to `startPrice`.           |
-| `highestBidder` | String | ❌ No    | The user ID of the highest bidder.                                          |
-
----
-
-### Example Request
+**For Successful Product Creation**:
 
 ```json
 {
-  "title": "Fresh Tomatoes",
-  "type": "auction",
-  "quantity": "30 kg",
-  "startPrice": 100,
-  "expiryTime": "2025-07-26T20:00:00Z",
-  "location": {
-    "type": "Point",
-    "coordinates": [77.1234, 28.5678]
-  },
-  "status": "open",
-  "image": "https://example.com/images/tomatoes.png",
-  "description": "Fresh organic tomatoes available for auction.",
-  "createdBy": "64c0f9f4e4b0a5d6c8f9e123",
-  "supplierId": "64c0f9f4e4b0a5d6c8f9e123",
-  "bids": [
-    {
-      "bidderId": "64c0f9f4e4b0a5d6c8f9e789",
-      "supplierId": "64c0f9f4e4b0a5d6c8f9e123",
-      "amount": 120,
-      "bidTime": "2025-07-26T10:00:00Z"
-    },
-    {
-      "bidderId": "64c0f9f4e4b0a5d6c8f9e456",
-      "supplierId": "64c0f9f4e4b0a5d6c8f9e456",
-      "amount": 150,
-      "bidTime": "2025-07-26T11:00:00Z"
-    }
-  ],
-  "highestBid": 150,
-  "highestBidder": "64c0f9f4e4b0a5d6c8f9e456"
+  "status": "success",
+  "statusCode": 201,
+  "message": "Product created successfully.",
+  "data": {
+    "productId": "64c0f9f4e4b0a5d6c8f9e123",
+    "title": "Fresh Tomatoes"
+  }
 }
 ```
 
+---
+
+## 📂 Category Management API
+
+### 🧾 Description
+
+This document provides details about the **Category Management** APIs for vendors in the MandiExpress backend.  
+Vendors can create, update, and delete categories to organize their products.
+
+---
+
+### 🚀 Endpoints
+
+#### 1. **Create Category**
+
+Allows a vendor to create a new category.
+
+**Endpoint**: `POST /api/v1/category/create`
+
+---
+
+#### 📥 Request Body (JSON)
+
+| Field         | Type   | Required | Description                                                                 |
+|---------------|--------|----------|-----------------------------------------------------------------------------|
+| `name`        | String | ✅ Yes   | Name of the category                                                       |
+| `description` | String | ❌ No    | Description of the category (optional)                                     |
+| `image`       | String | ❌ No    | URL of the category image (optional)                                       |
+| `isActive`    | Boolean| ❌ No    | Whether the category is active (default: `true`)                           |
+| `isPin`       | Boolean| ❌ No    | Whether the category is pinned (default: `false`)                          |
+
+---
+
+#### 📤 Response (JSON)
+
+**For Successful Category Creation**:
+
+```json
+{
+  "status": "success",
+  "statusCode": 201,
+  "message": "Category created successfully.",
+  "data": {
+    "categoryId": "64c0f9f4e4b0a5d6c8f9e789",
+    "name": "Vegetables"
+  }
+}
+```
+
+---
+
+#### 2. **Update Category**
+
+Allows a vendor to update an existing category.
+
+**Endpoint**: `PUT /api/v1/category/update/:categoryId`
+
+---
+
+#### 📥 Request Body (JSON)
+
+| Field         | Type   | Required | Description                                                                 |
+|---------------|--------|----------|-----------------------------------------------------------------------------|
+| `name`        | String | ❌ No    | Name of the category                                                       |
+| `description` | String | ❌ No    | Description of the category (optional)                                     |
+| `image`       | String | ❌ No    | URL of the category image (optional)                                       |
+| `isActive`    | Boolean| ❌ No    | Whether the category is active                                             |
+| `isPin`       | Boolean| ❌ No    | Whether the category is pinned                                             |
+
+---
+
+#### 📤 Response (JSON)
+
+**For Successful Category Update**:
+
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "message": "Category updated successfully.",
+  "data": {
+    "categoryId": "64c0f9f4e4b0a5d6c8f9e789",
+    "name": "Fresh Vegetables"
+  }
+}
+```
+
+---
+
+#### 3. **Delete Category**
+
+Allows a vendor to delete an existing category.
+
+**Endpoint**: `DELETE /api/v1/category/delete/:categoryId`
+
+---
+
+#### 📤 Response (JSON)
+
+**For Successful Category Deletion**:
+
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "message": "Category deleted successfully."
+}
+```
+
+
+## 📊 Dashboard API
+
+### 🧾 Description
+
+This document provides details about the **Dashboard API** for the MandiExpress backend.  
+The dashboard provides an overview of key metrics, recent activities, and other relevant data for vendors, suppliers, and admins.
+
+---
+
+### 🚀 Endpoints
+
+
+---
+
+#### 3. **Get Dashboard **
+
+Fetches a summary of the dashboard, including key metrics and highlights.
+
+**Endpoint**: `GET /api/v1/dashboard/summary`
+
+---
+
+#### 📤 Response (JSON)
+
+**For Successful Request**:
+```json
+{
+  "status": "success",
+  "statusCode": 200,
+  "message": "Dashboard summary fetched successfully.",
+  "data": {
+    "totalRevenue": 50000,
+    "totalOrders": 120,
+    "totalUsers": 100,
+    "topCategories": [
+      {
+        "categoryId": "64c0f9f4e4b0a5d6c8f9e789",
+        "name": "Vegetables",
+        "productCount": 50
+      },
+      {
+        "categoryId": "64c0f9f4e4b0a5d6c8f9e456",
+        "name": "Fruits",
+        "productCount": 30
+      }
+    ]
+  }
+}
+```
+
+---
+
+
 ## 🛠️ Notes
 
-- The `type` field determines whether the product is for auction or direct sale.
-- If `type` is `auction`, ensure the `expiryTime` is set for bidding.
-- The `bids` array stores all bids placed on the product.
-- Each bid now includes the `supplierId` of the bidder.
-- The `highestBid` and `highestBidder` fields are updated dynamically as new bids are placed.
-- The `location` field uses GeoJSON format for storing geographical data.
-- The `status` field defaults to `open` and can be updated to `closed` or `expired` based on business logic.
-- If a product is already available, other vendors cannot create a duplicate product but can place bids on the existing product.
+1. **Validation**:
+   - Ensure all required fields are validated properly.
+   - Use unique constraints where applicable (e.g., category name).
+
+2. **Authorization**:
+   - Restrict access to authorized users only.
+
+3. **Error Handling**:
+   - Handle edge cases like invalid IDs, missing fields, or unauthorized access.
+
+4. **Testing**:
+   - Test all endpoints with various inputs to ensure they handle edge cases correctly.

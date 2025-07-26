@@ -4,9 +4,9 @@ import OtpController from './Otp.controller.mjs';
 const router = express.Router();
 
 
-router.post('/generate', OtpController.generateOtp);
+router.post('/v1/generate/otp', OtpController.generateOtp);
 
 
-router.post('/validate', OtpController.validateOtp);
+router.post('/v1/validate/otp', OtpController.validateOtp);
 
-export default router;
+export { router as OtpRouter };

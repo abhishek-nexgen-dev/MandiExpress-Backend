@@ -1,6 +1,9 @@
 import OtpService from './Otp.service.mjs';
 import SendResponse from '../../../utils/SendResponse.mjs';
 import StatusCodeConstant from '../../../constant/StatusCode.constant.mjs';
+import userSchema from '../user/user.schema.mjs';
+import userService from '../user/user.service.mjs';
+import AuthUtils from '../Auth/Auth.utils.mjs';
 
 class OtpController {
 
@@ -36,28 +39,33 @@ class OtpController {
       const { email, otp } = req.body;
 
       if (!email || !otp) {
-        return SendResponse.error(
-          res,
-          StatusCodeConstant.BAD_REQUEST,
-          'Email and OTP are required.'
-        );
+       throw new Error('Email and OTP are required for validation.');
       }
 
+      const isActive = await AuthUtils.isUserActive(email);
 
       const isValid = await OtpService.validateOtp(email, otp);
 
-      if (!isValid) {
-        return SendResponse.error(
-          res,
-          StatusCodeConstant.BAD_REQUEST,
-          'Invalid or expired OTP.'
+
+
+      if (!isActive && !isValid) {
+        console.log('User is not active and OTP is invalid.');
+        await userSchema.updateOne(
+          { email },
+          { $set: { 
+            isActive: true,
+            emailVerified: true
+          }}
         );
       }
 
+   
+
+     
       SendResponse.success(
         res,
         StatusCodeConstant.SUCCESS,
-        'OTP validated successfully.'
+        'OTP validated successfully.',
       );
     } catch (error) {
       SendResponse.error(

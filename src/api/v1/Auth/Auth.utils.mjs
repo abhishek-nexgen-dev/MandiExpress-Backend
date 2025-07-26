@@ -20,6 +20,18 @@ class AuthUtility {
     return Math.random().toString(36).slice(-8);
   }
 
+  async isUserActive(email) {
+    try {
+      const user = await userSchema.findOne({ email });
+      if (!user) {
+        throw new Error("User not found.");
+      }
+      return user.isActive;
+    } catch (error) {
+      throw new Error(`Error checking user activation: ${error.message}`);
+    }
+  }
+
 
 
 

@@ -22,10 +22,11 @@ class OtpService {
 
 
   async validateOtp(email, otp) {
+   try {
     const otpRecord = await Otp.findOne({ email, otp });
 
     if (!otpRecord) {
-      return false; 
+      throw new Error('Invalid OTP or email.');
     }
 
     if (otpRecord.expiresAt < new Date()) {
@@ -36,6 +37,9 @@ class OtpService {
  
     await Otp.deleteOne({ _id: otpRecord._id }); 
     return true;
+   } catch (error) {
+    throw Error(`Error validating OTP: ${error.message}`);
+   }
   }
 
 

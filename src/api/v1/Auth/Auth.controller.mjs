@@ -63,9 +63,18 @@ class AuthController {
    */
   async Login(req = request, res = response) {
     try {
-      const { email, otp } = req.body;
+      const { email } = req.body;
 
-      // Validate OTP
+
+   const isActive = await AuthUtils.isUserActive(email);
+   console.log("User active status:", isActive);
+
+   if (!isActive) {
+       throw new Error('User is not active. Please activate your account first.');
+    }
+
+
+      // // Validate OTP
       const isOtpValid = await OtpService.validateOtp(email, otp);
       if (!isOtpValid) {
         return SendResponse.error(
@@ -75,7 +84,7 @@ class AuthController {
         );
       }
 
-      // Find the user by email
+      // // Find the user by email
       const user = await userService.findUserByEmail(email);
       if (!user) {
         return SendResponse.error(
@@ -85,16 +94,16 @@ class AuthController {
         );
       }
 
-      // Activate the user if not already active
+      // // Activate the user if not already active
       if (!user.isActive) {
         user.isActive = true;
         await user.save();
       }
 
-      // Generate a token for the user
+      // // Generate a token for the user
       const token = AuthUtility.generateToken(user.email);
 
-      // Set the token as a cookie
+      // // Set the token as a cookie
       res.cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -102,7 +111,7 @@ class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      // Prepare the response data
+      // // Prepare the response data
       const data = {
         user: {
           _id: user._id,

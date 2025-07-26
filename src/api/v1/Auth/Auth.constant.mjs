@@ -3,6 +3,7 @@ const Auth_Constant = {
   USER_LOGIN_SUCCESS: 'User Login Successfully',
   USER_LOGIN_FAILED: 'User Login Failed',
   USER_NOT_CREATED: 'User Not Created',
+  OTP_SENT: 'Your Account Has been Created Please Check Your Email for OTP',
   USER_NOT_FOUND: 'User Not Found',
   HASH_FAILED: 'Failed to hash Password',
   USER_ALREADY_EXISTS: 'User Already Exists',

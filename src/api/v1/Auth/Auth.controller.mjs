@@ -1,49 +1,55 @@
 import { request, response } from "express";
 import SendResponse from "../../../utils/SendResponse.mjs";
+
 import AuthConstant from "./Auth.constant.mjs";
 import StatusCodeConstant from "../../../constant/StatusCode.constant.mjs";
 import userService from "../user/user.service.mjs";
 import OtpService from "../Otp/Otp.service.mjs";
+import AuthUtils from "./Auth.utils.mjs";
 
 class AuthController {
-  /**
-   * Sign up a new user with OTP-based authentication.
-   */
+
   async SignUp(req, res) {
     try {
       const { email, name, role } = req.body;
+      const { filename } = req.file || {};
+      console.log("Received file:", filename);
 
-      // Check if the user already exists
-      const existingUser = await userService.findUserByEmail(email);
+      
+   
+
+
+      const existingUser = await AuthUtils.FindByEmail(email);
       if (existingUser) {
-        return SendResponse.error(
-          res,
-          StatusCodeConstant.BAD_REQUEST,
-          AuthConstant.USER_ALREADY_EXISTS
-        );
+       throw new Error(AuthConstant.USER_ALREADY_EXISTS);
       }
 
-      // Generate OTP
+  
+  
+
+
+      const newUser = await userService.createUser({
+       data: {...req.body },
+       ProfileImage: filename,
+      });
+
+      if (!newUser) {
+        throw new Error(AuthConstant.USER_CREATION_FAILED);
+      }
+
       const otp = await OtpService.generateOtp(email);
 
-      // Send OTP to the user's email
-      await OtpService.sendOtpEmail(email, otp, name);
 
-      // Create a new user (inactive until OTP is validated)
-      const newUser = await userService.createUser({
-        email,
-        name,
-        role,
-        isActive: false, // User will be activated after OTP validation
-      });
+      await OtpService.sendOtpEmail(email, otp, name);
 
       SendResponse.success(
         res,
         StatusCodeConstant.CREATED,
         AuthConstant.OTP_SENT,
-        { userId: newUser._id, email }
+        { user: newUser }
       );
     } catch (error) {
+      console.error("Error during user signup:", error);
       SendResponse.error(
         res,
         StatusCodeConstant.INTERNAL_SERVER_ERROR,

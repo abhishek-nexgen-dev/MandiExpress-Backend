@@ -1,44 +1,46 @@
 // File: src/api/v1/user/user.service.mjs
 
+import { uploadOnCloudinary } from "../../../utils/Cloudinary.mjs";
 import geocodingService from "../geocoding/geocoding.service.mjs";
 import userConstant from "./user.constant.mjs";
 import userSchema from "./user.schema.mjs";
 import { createUserValidator } from "./user.validator.mjs";
 
 class User_Service {
-
-  async createUser(data , fileName) {
+  /**
+   * Create a new user with optional profile image upload.
+   * @param {Object} data - User data.
+   * @param {string|null} ProfileImage - Path to the profile image file (optional).
+   */
+  async createUser({ data, ProfileImage }) {
     try {
-  
+      console.log("Creating user with data:", data);
+      console.log("File name:", ProfileImage);
 
- 
-        await createUserValidator.safeParseAsync(data);
+      // Validate user data
+      const validationResult = await createUserValidator.safeParseAsync(data);
+      if (!validationResult.success) {
+        throw new Error(validationResult.error.errors[0].message);
+      }
 
+      let userData = { ...data };
 
-        const upload = await uploadOnCloudinary(fileName);
+      // If a profile image is provided, upload it to Cloudinary
+      if (ProfileImage) {
+        const upload = await uploadOnCloudinary(ProfileImage);
+        userData.profileImage = upload.url; // Add the uploaded image URL to user data
+      }
 
-    
-        const userData = { ...data, profileImage: upload.url };
+      // Create the user in the database
+      const createdUser = await userSchema.create(userData);
 
-       
-        const createdUser = await userSchema.create(userData);
-
-     
-        SendResponse.success(
-            res,
-            StatusCodeConstant.CREATED,
-            userConstant.USER_CREATED,
-            createdUser
-        );
-
+      return createdUser;
     } catch (error) {
-
-        SendResponse.error(res, StatusCodeConstant.INTERNAL_SERVER_ERROR, error.message);
+      console.error("Error creating user:", error.message);
+      throw new Error(error.message || userConstant.USER_CREATION_FAILED);
     }
-}
+  }
 
-
- 
   _getCoordinates(location) {
     if (Array.isArray(location)) {
       return location;
@@ -68,18 +70,15 @@ class User_Service {
     }
   }
 
- 
   async findSupplierNearLocationByLocationName(
     locationName,
     options = { page: 1, limit: 10 },
     distance = 10000
   ) {
     try {
-
       if (!locationName.includes(",") && locationName.trim().split(" ").length === 1) {
         throw new Error("Please provide a more specific location, such as including the state or country (e.g., 'Chatra, Jharkhand, India').");
       }
-
 
       const coordinates = await geocodingService.getCoordinates(locationName);
 
@@ -120,11 +119,8 @@ class User_Service {
         },
       ]);
 
-      
-
       return suppliers || [];
     } catch (error) {
-  
       throw new Error(error.message || userConstant.FETCH_SUPPLIERS_FAILED);
     }
   }

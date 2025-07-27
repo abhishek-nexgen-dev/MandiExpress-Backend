@@ -39,6 +39,33 @@ class VendorController {
       );
     }
   }
+
+  async fetchAllProducts(req, res) {
+    try {
+      const { page = 1, limit = 10 } = req.query; // Extract pagination parameters from query
+
+      console.log('Fetching all products with pagination:', { page, limit });
+
+      // Fetch all products using ProductUtils
+      const result = await ProductUtils.fetchAllProducts(Number(page), Number(limit));
+
+      SendResponse.success(
+        res,
+        StatusCodeConstant.SUCCESS,
+        'Products fetched successfully',
+        result
+      );
+    } catch (error) {
+      console.error('Error fetching all products:', error.message);
+
+      // Send error response
+      SendResponse.error(
+        res,
+        StatusCodeConstant.INTERNAL_SERVER_ERROR,
+        error.message || 'Error fetching all products'
+      );
+    }
+  }
 }
 
 export default new VendorController();

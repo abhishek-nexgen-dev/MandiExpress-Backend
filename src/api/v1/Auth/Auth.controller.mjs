@@ -7,6 +7,7 @@ import userService from '../user/user.service.mjs';
 import OtpService from '../Otp/Otp.service.mjs';
 import AuthUtils from './Auth.utils.mjs';
 import AuthService from './Auth.service.mjs';
+import userSchema from '../user/user.schema.mjs';
 
 class AuthController {
   async SignUp(req, res) {
@@ -87,21 +88,22 @@ class AuthController {
       const { email, otp } = req.body;
 
       const user = await AuthUtils.FindByEmail(email);
+      console.log('User found:', user);
 
       if (!user) {
         throw new Error(AuthConstant.USER_NOT_FOUND);
       }
 
       const isOtpValid = await OtpService.validateOtp(email, otp);
-      if (!isOtpValid) {
+       if (!isOtpValid) {
         throw new Error('Invalid OTP or email.');
-      }
+      }  
 
       if (!user.isActive && !user.emailVerified) {
-        await userService.updateUser(email, {
-          isActive: true,
-          emailVerified: true,
-        });
+        await userSchema.updateOne(
+          { email },
+          { $set: { isActive: true, emailVerified: true } }
+        );
         user.isActive = true;
       }
 

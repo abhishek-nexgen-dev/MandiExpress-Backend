@@ -2,35 +2,27 @@ import ProductModel from "./Product.model.mjs";
 import ProductUtils from "./Product.utils.mjs";
 import { createProductValidator, updateProductValidator } from "./Product.validator.mjs";
 import { uploadOnCloudinary } from "../../../utils/Cloudinary.mjs";
+import AuthUtils from "../Auth/Auth.utils.mjs";
+import OtpSchema from "../Otp/Otp.Schema.mjs";
+import OtpService from "../Otp/Otp.service.mjs";
 
 class Product_Service {
 
   async createProduct(data) {
     try {
 
-      console.log("Creating product with data:", data);
 
       const validatedData = await createProductValidator.validateAsync(data, {
         abortEarly: false,
       });
 
-      console.log("Validated Data:", validatedData);
-
 
       const imageUploadPromises = data.files.map(async (file) => {
-        console.log("Uploading file:", file);
         const uploadResult = await uploadOnCloudinary(file);
         return uploadResult.url;
       });
       const UploadImageUrls = await Promise.all(imageUploadPromises);
-
-    
-
-
       validatedData.images = UploadImageUrls;
-
-
-
       const product = await ProductModel.create(validatedData);
 
       if (!product) {
@@ -44,13 +36,7 @@ class Product_Service {
     }
   }
 
-  /**
-   * Update an existing product
-   * @param {String} productId - The ID of the product to update
-   * @param {Object} data - The updated product data
-   * @param {Array} files - Array of uploaded product image files
-   * @returns {Object} - The updated product
-   */
+
   async updateProduct({ productId, data, files }) {
     try {
       console.log("Updating product with ID:", productId);
@@ -92,6 +78,96 @@ class Product_Service {
     } catch (error) {
       console.error("Error updating product:", error.message);
       throw new Error(error.message || "Product update failed.");
+    }
+  }
+
+  // 'supplier', 'vendor'
+  async Live_auction({
+    SupplierId,
+    ProductId,
+    VendorId,
+    Bid_Amount,
+    Email,
+    Name
+  }) {
+    try {
+
+     let product = await ProductUtils.findProductById(ProductId);
+
+      if (!product) {
+        throw new Error("Product not found.");
+      }
+
+      let FInd_User = await AuthUtils.FindByEmail(Email);
+
+      if (!FInd_User) {
+        throw new Error("Please Enter Correct Email Id to Place Bid.");
+      }
+
+     
+//  {
+//         bidderId: {
+//           type: mongoose.Schema.Types.ObjectId,
+//           ref: 'User', // Reference to the bidder
+//           required: true,
+//         },
+//         amount: {
+//           type: Number,
+//           required: true,
+//           min: 0,
+//         },
+//         bidTime: {
+//           type: Date,
+//           default: Date.now,
+//         },
+//       },
+      
+
+      const updatedProduct = await ProductModel.findById(ProductId)
+
+      updatedProduct.push({
+        name: FInd_User.name,
+        email: FInd_User.email,
+        bidderId: VendorId,
+        amount: Bid_Amount,
+        bidTime: new Date().toTimeString(),
+      })
+
+      updatedProduct.save();
+
+      return {
+        message: "Live auction started successfully.",
+        product: updatedProduct,
+      };
+    } catch (error) {
+      console.error("Error starting live auction:", error.message);
+      throw new Error(error.message || "Live auction failed.");
+    }
+  }
+
+  async genOtpToPlaceBid({ email }) {
+    try {
+    
+      let findUserByEmail = await AuthUtils.FindByEmail(email);
+      if (!findUserByEmail) {
+        throw new Error("Please Enter Correct Id to Place Bid.");
+      }
+
+      let GenOtp = OtpService.generateOtp(email);
+      if (!GenOtp) {
+        throw new Error("Failed to generate OTP.");
+      }
+
+      const SendOtp = await OtpService.sendOtp(email, GenOtp);
+
+      return {
+        name: findUserByEmail.name,
+        email: findUserByEmail.email,
+        
+      };
+    } catch (error) {
+      console.error("Error generating OTP:", error.message);
+      throw new Error(error.message || "Failed to generate OTP.");
     }
   }
 }

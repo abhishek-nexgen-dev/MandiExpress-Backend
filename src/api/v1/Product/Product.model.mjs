@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -9,8 +9,8 @@ const ProductSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["auction", "direct"], 
-      default: "auction",
+      enum: ['auction', 'direct'],
+      default: 'auction',
       required: true,
     },
     quantity: {
@@ -30,7 +30,7 @@ const ProductSchema = new mongoose.Schema(
     location: {
       type: {
         type: String,
-        enum: ["Point"], // GeoJSON type
+        enum: ['Point'], // GeoJSON type
         required: true,
       },
       coordinates: {
@@ -40,8 +40,8 @@ const ProductSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["open", "closed", "expired"],
-      default: "open",
+      enum: ['open', 'closed', 'expired'],
+      default: 'open',
     },
     image: {
       type: String, // URL of the image
@@ -54,19 +54,19 @@ const ProductSchema = new mongoose.Schema(
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
+      ref: 'User', // Reference to the User model
       required: true,
     },
     supplierId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the supplier
+      ref: 'User', // Reference to the supplier
       required: true,
     },
     bids: [
       {
         bidderId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "User", // Reference to the bidder
+          ref: 'User', // Reference to the bidder
           required: true,
         },
         amount: {
@@ -86,7 +86,7 @@ const ProductSchema = new mongoose.Schema(
     },
     highestBidder: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the highest bidder
+      ref: 'User', // Reference to the highest bidder
       required: false,
     },
     createdAt: {
@@ -94,7 +94,7 @@ const ProductSchema = new mongoose.Schema(
       default: Date.now,
     },
     pin: {
-      type: Boolean , // Indicates if the product is pinned
+      type: Boolean, // Indicates if the product is pinned
       default: false,
     },
     updatedAt: {
@@ -107,6 +107,6 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-ProductSchema.index({ location: "2dsphere" }); // Geospatial index for location
+ProductSchema.index({ location: '2dsphere' }); // Geospatial index for location
 
-export default mongoose.model("Product", ProductSchema);
+export default mongoose.model('Product', ProductSchema);

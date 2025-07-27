@@ -5,15 +5,13 @@ import userSchema from '../user/user.schema.mjs';
 
 import AuthUtils from '../Auth/Auth.utils.mjs';
 
-
 class OtpController {
-
   async generateOtp(req, res) {
     try {
       const { email } = req.body;
 
       if (!email) {
-       throw new Error('Email is required to generate OTP.');
+        throw new Error('Email is required to generate OTP.');
       }
 
       // Generate and save OTP
@@ -23,7 +21,7 @@ class OtpController {
         res,
         StatusCodeConstant.CREATED,
         'OTP generated successfully.',
-        { email, otp } 
+        { email, otp }
       );
     } catch (error) {
       SendResponse.error(
@@ -34,41 +32,35 @@ class OtpController {
     }
   }
 
-
   async validateOtp(req, res) {
     try {
       const { email, otp } = req.body;
 
       if (!email || !otp) {
-       throw new Error('Email and OTP are required for validation.');
+        throw new Error('Email and OTP are required for validation.');
       }
 
       const isActive = await AuthUtils.isUserActive(email);
 
       const isValid = await OtpService.validateOtp(email, otp);
 
-
-
       if (!isActive && !isValid) {
         console.log('User is not active and OTP is invalid.');
         await userSchema.updateOne(
           { email },
-          { $set: { 
-            isActive: true,
-            emailVerified: true
-          }}
+          {
+            $set: {
+              isActive: true,
+              emailVerified: true,
+            },
+          }
         );
       }
 
-     
-
-   
-
-     
       SendResponse.success(
         res,
         StatusCodeConstant.SUCCESS,
-        'OTP validated successfully.',
+        'OTP validated successfully.'
       );
     } catch (error) {
       SendResponse.error(

@@ -1,10 +1,10 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const CategorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Category name is required."],
+      required: [true, 'Category name is required.'],
       trim: true,
       unique: true,
     },
@@ -15,6 +15,7 @@ const CategorySchema = new mongoose.Schema(
     },
     image: {
       type: String, // URL for the category image
+      required: true, // Optional field
       default: null,
     },
     isActive: {
@@ -29,7 +30,7 @@ const CategorySchema = new mongoose.Schema(
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product", // Reference to the Product model
+          ref: 'Product', // Reference to the Product model
           required: true,
         },
         addedAt: {
@@ -40,7 +41,7 @@ const CategorySchema = new mongoose.Schema(
     ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the User model
+      ref: 'User', // Reference to the User model
       required: true,
     },
   },
@@ -49,4 +50,4 @@ const CategorySchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Category", CategorySchema);
+export default mongoose.model('Category', CategorySchema);

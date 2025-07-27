@@ -5,27 +5,39 @@ configDotenv();
 
 // Define a Zod schema for environment variables
 const envSchema = z.object({
-  PORT: z.string().nonempty("PORT is required").transform(Number),
-  MONGO_URI: z.string().url("MONGO_URI must be a valid URL"),
-  JWT_SECRET: z.string().nonempty("JWT_SECRET is required"),
-  JWT_EXPIRES_IN: z.string().nonempty("JWT_EXPIRES_IN is required"),
-  JWT_COOKIE_EXPIRES_IN: z.string().nonempty("JWT_COOKIE_EXPIRES_IN is required"),
-  GMAIL_User: z.string().email("GMAIL_User must be a valid email"),
-  FRONTEND_URL: z.string().url("FRONTEND_URL must be a valid URL"),
-  NODE_ENV: z.enum(["development", "production", "test"], "NODE_ENV must be one of 'development', 'production', or 'test'"),
-  GMAIL_Password: z.string().nonempty("GMAIL_Password is required"),
-  isDevelopment: z.string().transform((val) => val === "true"),
+  PORT: z.string().nonempty('PORT is required').transform(Number),
+  MONGO_URI: z.string().url('MONGO_URI must be a valid URL'),
+  JWT_SECRET: z.string().nonempty('JWT_SECRET is required'),
+  JWT_EXPIRES_IN: z.string().nonempty('JWT_EXPIRES_IN is required'),
+  JWT_COOKIE_EXPIRES_IN: z
+    .string()
+    .nonempty('JWT_COOKIE_EXPIRES_IN is required'),
+  GMAIL_User: z.string().email('GMAIL_User must be a valid email'),
+  FRONTEND_URL: z.string().url('FRONTEND_URL must be a valid URL'),
+  NODE_ENV: z.enum(
+    ['development', 'production', 'test'],
+    "NODE_ENV must be one of 'development', 'production', or 'test'"
+  ),
+  GMAIL_Password: z.string().nonempty('GMAIL_Password is required'),
+  isDevelopment: z.string().transform((val) => val === 'true'),
   GEMINI_API_KEY: z.string().optional(),
-  Cloudinary_Cloud_Name: z.string().nonempty("Cloudinary_Cloud_Name is required"),
-  Cloudinary_API_Key: z.string().nonempty("Cloudinary_API_Key is required"),
-  Cloudinary_API_Secret: z.string().nonempty("Cloudinary_API_Secret is required"),
+  Cloudinary_Cloud_Name: z
+    .string()
+    .nonempty('Cloudinary_Cloud_Name is required'),
+  Cloudinary_API_Key: z.string().nonempty('Cloudinary_API_Key is required'),
+  Cloudinary_API_Secret: z
+    .string()
+    .nonempty('Cloudinary_API_Secret is required'),
 });
 
 // Parse and validate environment variables
 const parsedEnv = envSchema.safeParse(process.env);
 
 if (!parsedEnv.success) {
-  console.error("Environment variable validation failed:", parsedEnv.error.format());
+  console.error(
+    'Environment variable validation failed:',
+    parsedEnv.error.format()
+  );
   process.exit(1); // Exit the application if validation fails
 }
 

@@ -22,7 +22,7 @@ class AuthService {
       console.error('Error updating user token:', error);
       throw Error(error.message || 'Error updating user token');
     }
-  }
+  };
 }
 
 export default new AuthService();

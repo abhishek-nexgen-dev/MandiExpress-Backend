@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 class Geocoding_Service {
   /**
@@ -8,27 +8,32 @@ class Geocoding_Service {
    */
   async getCoordinates(locationName) {
     if (!locationName) {
-      console.error("Location name is required.");
+      console.error('Location name is required.');
       return null;
     }
 
     try {
-      const response = await axios.get("https://nominatim.openstreetmap.org/search", {
-        params: {
-          q: locationName,
-          format: "json",
-          limit: 1,
-        },
-        headers: {
-          "User-Agent": "MandiExpress"
-        },
-      });
+      const response = await axios.get(
+        'https://nominatim.openstreetmap.org/search',
+        {
+          params: {
+            q: locationName,
+            format: 'json',
+            limit: 1,
+          },
+          headers: {
+            'User-Agent': 'MandiExpress',
+          },
+        }
+      );
 
       const data = response.data;
       console.log(`✅ Found coordinates for "${locationName}":`, data);
 
       if (!data || data.length === 0) {
-        console.log(`❌ Could not find coordinates for location: "${locationName}"`);
+        console.log(
+          `❌ Could not find coordinates for location: "${locationName}"`
+        );
         return null;
       }
 
@@ -37,9 +42,8 @@ class Geocoding_Service {
         lat: parseFloat(lat),
         lng: parseFloat(lon),
       };
-
     } catch (error) {
-      console.error("Geocoding error:", error.message);
+      console.error('Geocoding error:', error.message);
       return null;
     }
   }

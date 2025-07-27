@@ -21,8 +21,3 @@ export let Gmail = () => {
     console.error(error.message);
   }
 };
-
-
-
-
-

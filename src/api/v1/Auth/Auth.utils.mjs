@@ -1,15 +1,15 @@
-import jwt from "jsonwebtoken";
-import Crypto from "crypto";
-import bcrypt from "bcryptjs";
-import userSchema from "../user/user.schema.mjs";
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import userSchema from '../user/user.schema.mjs';
+import envConstant from '../../../constant/env.constant.mjs';
 
 class AuthUtility {
-
-
-
- 
   async FindByEmail(email) {
     return userSchema.findOne({ email });
+  }
+
+  async FindByUserId(userId) {
+    return await userSchema.findById(userId);
   }
 
   /**
@@ -24,49 +24,43 @@ class AuthUtility {
     try {
       const user = await userSchema.findOne({ email });
       if (!user) {
-        throw new Error("User not found.");
+        throw new Error('User not found.');
       }
       return user.isActive;
     } catch (error) {
-      throw new Error(`Error checking user activation: ${error.message}`);
+      throw Error(`Error checking user activation: ${error.message}`);
     }
   }
-
-
-
-
 
   async hashPassword(password) {
     return await bcrypt.hash(password, 15);
   }
 
-  
   async hashEmail(email) {
     try {
       if (!email) {
-        throw new Error("Email is required to generate a token.");
+        throw new Error('Email is required to generate a token.');
       }
 
       const JwtEmail = jwt.sign({ email }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
+        expiresIn: '7d',
       });
 
       return JwtEmail;
     } catch (error) {
-      throw new Error(error.message);
+      throw Error(error.message);
     }
   }
-
 
   async comparePassword(password, hash) {
     try {
       const match = await bcrypt.compare(password, hash);
       if (!match) {
-        throw new Error("Failed to match password.");
+        throw new Error('Failed to match password.');
       }
       return match;
     } catch (error) {
-      throw new Error(`Error comparing password: ${error.message}`);
+      throw Error(`Error comparing password: ${error.message}`);
     }
   }
 
@@ -74,48 +68,48 @@ class AuthUtility {
     try {
       const user = await userSchema.findOne({ email });
       if (!user) {
-        throw new Error("User not found.");
+        throw new Error('User not found.');
       }
       return user.role;
     } catch (error) {
-      throw new Error(`Error checking user role: ${error.message}`);
+      throw Error(`Error checking user role: ${error.message}`);
     }
   }
-
-  
-
 
   async DecodeToken(token) {
     try {
-      if (!token) {
-        throw new Error("Token is missing.");
+      if (typeof token !== 'string' || token.trim() === '') {
+        throw new Error('Token must be a non-empty string');
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      if (!decoded || !decoded.email) {
-        throw new Error("Invalid token: Missing email in payload.");
+      const decoded = jwt.verify(token, envConstant.JWT_SECRET);
+
+      if (!decoded) {
+        throw new Error('Invalid token');
       }
 
-      return decoded.email;
+      return decoded;
     } catch (error) {
-      console.error("Error decoding token:", error.message);
-      throw new Error(`Error decoding token: ${error.message}`);
+      console.error('Error decoding token:', error.message);
+      throw Error(`Error decoding token: ${error.message}`);
     }
   }
 
-  async generateToken(email) {
+  async generateToken({ email, userId, role }) {
     try {
       if (!email) {
-        throw new Error("Email is required to generate a token.");
+        throw new Error('Email is required to generate a token.');
       }
 
-      const token = jwt.sign({ email }, process.env.JWT_SECRET, {
-        expiresIn: "12h",
-      });
+      const token = jwt.sign(
+        { email, userId, role },
+        envConstant.JWT_SECRET,
+        { expiresIn: '5h' } // <-- 5 hours expiration
+      );
 
       return token;
     } catch (error) {
-      throw new Error(`Error generating token: ${error.message}`);
+      throw Error(`Error generating token: ${error.message}`);
     }
   }
 }

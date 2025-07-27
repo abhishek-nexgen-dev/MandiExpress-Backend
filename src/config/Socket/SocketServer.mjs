@@ -3,7 +3,6 @@ import path from 'path';
 import { Server } from 'socket.io';
 import envConstant from '../../constant/env.constant.mjs';
 
-
 import { db_connect } from '../Db.config.mjs';
 import app from '../../routes/app.mjs';
 
@@ -29,17 +28,12 @@ const PORT = envConstant.PORT || 8000;
 
 const Start_App = async () => {
   try {
-  
     await db_connect();
-    
   } catch (error) {
     console.error(error);
     process.exit(1);
   }
 };
 
-
-
 export { Start_App, httpServer, PORT };
 export default io;
-

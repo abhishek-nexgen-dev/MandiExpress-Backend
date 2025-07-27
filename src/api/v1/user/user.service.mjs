@@ -1,10 +1,10 @@
 // File: src/api/v1/user/user.service.mjs
 
-import { uploadOnCloudinary } from "../../../utils/Cloudinary.mjs";
-import geocodingService from "../geocoding/geocoding.service.mjs";
-import userConstant from "./user.constant.mjs";
-import userSchema from "./user.schema.mjs";
-import { createUserValidator } from "./user.validator.mjs";
+import { uploadOnCloudinary } from '../../../utils/Cloudinary.mjs';
+import geocodingService from '../geocoding/geocoding.service.mjs';
+import userConstant from './user.constant.mjs';
+import userSchema from './user.schema.mjs';
+import { createUserValidator } from './user.validator.mjs';
 
 class User_Service {
   /**
@@ -14,8 +14,8 @@ class User_Service {
    */
   async createUser({ data, ProfileImage }) {
     try {
-      console.log("Creating user with data:", data);
-      console.log("File name:", ProfileImage);
+      console.log('Creating user with data:', data);
+      console.log('File name:', ProfileImage);
 
       // Validate user data
       const validationResult = await createUserValidator.safeParseAsync(data);
@@ -36,7 +36,7 @@ class User_Service {
 
       return createdUser;
     } catch (error) {
-      console.error("Error creating user:", error.message);
+      console.error('Error creating user:', error.message);
       throw new Error(error.message || userConstant.USER_CREATION_FAILED);
     }
   }
@@ -44,10 +44,16 @@ class User_Service {
   _getCoordinates(location) {
     if (Array.isArray(location)) {
       return location;
-    } else if (typeof location === 'object' && location.lng !== undefined && location.lat !== undefined) {
+    } else if (
+      typeof location === 'object' &&
+      location.lng !== undefined &&
+      location.lat !== undefined
+    ) {
       return [location.lng, location.lat];
     } else {
-      throw new Error("Invalid location format. Must be [lng, lat] or { lng, lat }");
+      throw new Error(
+        'Invalid location format. Must be [lng, lat] or { lng, lat }'
+      );
     }
   }
 
@@ -55,14 +61,16 @@ class User_Service {
     try {
       const coordinates = this._getCoordinates(location);
 
-      const users = await userSchema.find({
-        location: {
-          $near: {
-            $geometry: { type: "Point", coordinates },
-            $maxDistance: distance,
+      const users = await userSchema
+        .find({
+          location: {
+            $near: {
+              $geometry: { type: 'Point', coordinates },
+              $maxDistance: distance,
+            },
           },
-        },
-      }).select("-password -__v -emailVerified -phoneVerified");
+        })
+        .select('-password -__v -emailVerified -phoneVerified');
 
       return users || [];
     } catch (error) {
@@ -76,16 +84,23 @@ class User_Service {
     distance = 10000
   ) {
     try {
-      if (!locationName.includes(",") && locationName.trim().split(" ").length === 1) {
-        throw new Error("Please provide a more specific location, such as including the state or country (e.g., 'Chatra, Jharkhand, India').");
+      if (
+        !locationName.includes(',') &&
+        locationName.trim().split(' ').length === 1
+      ) {
+        throw new Error(
+          "Please provide a more specific location, such as including the state or country (e.g., 'Chatra, Jharkhand, India')."
+        );
       }
 
       const coordinates = await geocodingService.getCoordinates(locationName);
 
       if (!coordinates) {
-        throw new Error(`Could not find coordinates for location: "${locationName}"`);
+        throw new Error(
+          `Could not find coordinates for location: "${locationName}"`
+        );
       }
-      
+
       const page = parseInt(options.page, 10) || 1;
       const limit = parseInt(options.limit, 10) || 10;
       const skip = (page - 1) * limit;
@@ -94,17 +109,17 @@ class User_Service {
         {
           $geoNear: {
             near: {
-              type: "Point",
+              type: 'Point',
               coordinates: [coordinates.lng, coordinates.lat],
             },
-            distanceField: "distance",
+            distanceField: 'distance',
             maxDistance: distance,
             spherical: true,
           },
         },
         {
           $match: {
-            role: "supplier",
+            role: 'supplier',
           },
         },
         { $skip: skip },

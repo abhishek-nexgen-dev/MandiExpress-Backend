@@ -5,43 +5,35 @@ import path from 'path';
 import fs from 'fs';
 import { Gmail } from '../../../utils/SendMail.mjs';
 
-
-
-
 class OtpService {
-
   async generateOtp(email) {
-    const otp = await OtpUtils.generateOTP(); 
-    const expiresAt = OtpUtils.getExpiryTime(5); 
+    const otp = await OtpUtils.generateOTP();
+    const expiresAt = OtpUtils.getExpiryTime(5);
 
-  
     await Otp.create({ email, otp, expiresAt });
 
     return otp;
   }
 
-
   async validateOtp(email, otp) {
-   try {
-    const otpRecord = await Otp.findOne({ email, otp });
+    try {
+      const otpRecord = await Otp.findOne({ email, otp });
 
-    if (!otpRecord) {
-      throw new Error('Invalid OTP or email.');
+      if (!otpRecord) {
+        throw new Error('Invalid OTP or email.');
+      }
+
+      if (otpRecord.expiresAt < new Date()) {
+        await Otp.deleteOne({ _id: otpRecord._id });
+        return false;
+      }
+
+      await Otp.deleteOne({ _id: otpRecord._id });
+      return true;
+    } catch (error) {
+      throw Error(`Error validating OTP: ${error.message}`);
     }
-
-    if (otpRecord.expiresAt < new Date()) {
-      await Otp.deleteOne({ _id: otpRecord._id }); 
-      return false; 
-    }
-
- 
-    await Otp.deleteOne({ _id: otpRecord._id }); 
-    return true;
-   } catch (error) {
-    throw Error(`Error validating OTP: ${error.message}`);
-   }
   }
-
 
   startOtpCleanupJob() {
     cron.schedule('* * * * *', async () => {
@@ -53,13 +45,17 @@ class OtpService {
     });
   }
 
- async sendOtpEmail(email, otp, name) {
-    
-
+  async sendOtpEmail(email, otp, name) {
     try {
- 
-      const templatePath = path.join(path.resolve(),'src', 'api', 'v1', 'Otp', 'Template', 'Otp.template.html');
- 
+      const templatePath = path.join(
+        path.resolve(),
+        'src',
+        'api',
+        'v1',
+        'Otp',
+        'Template',
+        'Otp.template.html'
+      );
 
       let emailTemplate = fs.readFileSync(templatePath, 'utf-8');
       if (!emailTemplate) {
@@ -79,8 +75,7 @@ class OtpService {
         html: emailTemplate,
       };
 
-    
-      const transporter = Gmail(); 
+      const transporter = Gmail();
       if (!transporter) {
         throw new Error('Failed to initialize email transporter.');
       }
@@ -90,13 +85,9 @@ class OtpService {
       console.log(`OTP sent to ${email}: ${otp}`);
     } catch (error) {
       console.error('Error sending OTP:', error.message);
-      throw  Error(error.message || AuthConstant.OTP_SEND_FAILED);
+      throw Error(error.message || AuthConstant.OTP_SEND_FAILED);
     }
   }
-
-
-
-
 }
 
 export default new OtpService();

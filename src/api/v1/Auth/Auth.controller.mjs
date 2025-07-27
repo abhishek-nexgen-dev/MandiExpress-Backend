@@ -95,9 +95,9 @@ class AuthController {
       }
 
       const isOtpValid = await OtpService.validateOtp(email, otp);
-       if (!isOtpValid) {
+      if (!isOtpValid) {
         throw new Error('Invalid OTP or email.');
-      }  
+      }
 
       if (!user.isActive && !user.emailVerified) {
         await userSchema.updateOne(

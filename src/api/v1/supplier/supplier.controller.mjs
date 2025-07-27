@@ -51,22 +51,24 @@ class Supplier_Controller {
     }
   }
 
-
   async createProduct(req = Request, res = Response) {
     try {
-
       const token =
-      req.cookies?.token || req.headers?.authorization?.split(' ')[1];
+        req.cookies?.token || req.headers?.authorization?.split(' ')[1];
 
-    if (!token) {
-      throw new Error('Authentication token is required');
-    }
+      if (!token) {
+        throw new Error('Authentication token is required');
+      }
 
-       const decoded = await AuthUtils.DecodeToken(String(token).trim());
-       console.log("Decoded User:", decoded);
+      const decoded = await AuthUtils.DecodeToken(String(token).trim());
+      console.log('Decoded User:', decoded);
 
-       let data = { ...req.body, createdBy: decoded.userId , files: req.files.map(file => file.filename) };
-      
+      let data = {
+        ...req.body,
+        createdBy: decoded.userId,
+        files: req.files.map((file) => file.filename),
+      };
+
       const product = await ProductService.createProduct(data);
 
       SendResponse.success(
@@ -83,7 +85,6 @@ class Supplier_Controller {
       );
     }
   }
-
 }
 
 export default new Supplier_Controller();

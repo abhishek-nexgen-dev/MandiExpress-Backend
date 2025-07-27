@@ -32,7 +32,6 @@ An OTP is sent to the user's phone or email for verification.
 | `email`        | String | ✅ Yes   | Unique, valid email address                                                 |
 | `phone`        | String | ✅ Yes   | Unique 10-digit phone number                                                |
 | `role`         | String | ✅ Yes   | One of: `supplier`, `vendor`, `admin`, `customer`                          |
-| `location`     | Object | ❌ No    | GeoJSON object with type `"Point"` and coordinates `[longitude, latitude]` |
 | `profileImage` | String | ❌ No    | URL of the profile picture (optional)                                      |
 
 ---

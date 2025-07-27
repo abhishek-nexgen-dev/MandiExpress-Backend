@@ -13,7 +13,6 @@ const authMiddleware = (requiredRoles = []) => {
       const token =
         req.cookies?.token || req.headers?.authorization?.split(' ')[1];
       const decoded = await AuthUtils.DecodeToken(String(token).trim());
-      
 
       const user = await AuthUtils.FindByUserId(decoded.userId);
       if (!user) {

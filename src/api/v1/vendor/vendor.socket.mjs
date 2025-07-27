@@ -1,6 +1,3 @@
-const VendorSocket = () =>{
-
-}
-
+const VendorSocket = () => {};
 
 export default VendorSocket;

@@ -81,8 +81,6 @@ class OtpService {
       }
 
       await transporter.sendMail(mailOptions);
-
-   
     } catch (error) {
       console.error('Error sending OTP:', error.message);
       throw Error(error.message || AuthConstant.OTP_SEND_FAILED);

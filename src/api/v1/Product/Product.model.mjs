@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { email } from 'zod';
 
 const ProductSchema = new mongoose.Schema(
   {
@@ -29,7 +30,6 @@ const ProductSchema = new mongoose.Schema(
 
     expiryTime: {
       type: Date,
-      
     },
 
     label: {
@@ -66,13 +66,26 @@ const ProductSchema = new mongoose.Schema(
       ref: 'User', // Reference to the User model
       required: true,
     },
-   
+
     bids: [
       {
         bidderId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: 'User', // Reference to the bidder
           required: true,
+        },
+        email : {
+          type: String,
+          required: true,
+          validate: {
+            validator: (v) => email().safeParse(v).success,
+            message: 'Invalid email format',
+          },
+        },
+        name: {
+          type: String,
+          required: true,
+          trim: true,
         },
         amount: {
           type: Number,

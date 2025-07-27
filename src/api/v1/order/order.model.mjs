@@ -31,6 +31,13 @@ const OrderSchema = new mongoose.Schema(
         },
       },
     ],
+
+    originalPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    
     finalAmount: {
       type: Number,
       required: true,

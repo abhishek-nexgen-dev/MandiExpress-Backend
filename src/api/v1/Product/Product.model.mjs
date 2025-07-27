@@ -23,19 +23,26 @@ const ProductSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    productSize: {
+      type: String,
+    },
+
     expiryTime: {
       type: Date,
-      required: true,
+      
+    },
+
+    label: {
+      type: [String],
+      trim: true,
     },
     location: {
       type: {
         type: String,
         enum: ['Point'], // GeoJSON type
-        required: true,
       },
       coordinates: {
         type: [Number], // [longitude, latitude]
-        required: true,
       },
     },
     status: {
@@ -59,11 +66,7 @@ const ProductSchema = new mongoose.Schema(
       ref: 'User', // Reference to the User model
       required: true,
     },
-    supplierId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Reference to the supplier
-      required: true,
-    },
+   
     bids: [
       {
         bidderId: {
@@ -98,6 +101,12 @@ const ProductSchema = new mongoose.Schema(
     pin: {
       type: Boolean, // Indicates if the product is pinned
       default: false,
+    },
+
+    star: {
+      type: Number,
+      min: 0,
+      default: 0, // Default star rating
     },
     updatedAt: {
       type: Date,

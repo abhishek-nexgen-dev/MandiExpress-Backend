@@ -19,7 +19,7 @@ export const createProductValidator = Joi.object({
   }),
   expiryTime: Joi.date()
     .greater("now")
-    .required()
+    .optional()
     .messages({
       "date.greater": "Expiry time must be in the future.",
     }),
@@ -35,29 +35,55 @@ export const createProductValidator = Joi.object({
         "array.length":
           "Coordinates must contain exactly two numbers (longitude, latitude).",
       }),
-  }).required(),
+  }).optional(),
+  supplier_Id: Joi.string().optional(),
   status: Joi.string()
     .valid("open", "closed", "expired")
     .default("open")
     .optional(),
-  images: Joi.array()
+
+    files: Joi.array().min(1).required().messages({
+      "array.base": "Files must be an array.",
+      "array.min": "At least one file is required.",
+    })
     .items(
-      Joi.string().uri().messages({
+      Joi.string().messages({
         "string.uri": "Each image must be a valid URL.",
+        "string.empty": "Image URL cannot be empty.",
+      
       })
     )
-    .min(1)
     .required()
     .messages({
-      "array.min": "At least one image is required.",
+      "array.base": "Images must be an array of URLs.",
+      "array.empty": "At least one image is required.",
     }),
+
+
+    createdBy: Joi.string().required().messages({
+      "string.empty": "Created by is required.",
+    }),
+
+
   description: Joi.string().trim().optional(),
-  createdBy: Joi.string().min(1).required().messages({
-    "string.empty": "CreatedBy is required.",
+ 
+  label: Joi.string().trim().optional().messages({
+    "string.empty": "Label must be a valid string.",
   }),
-  supplierId: Joi.string().min(1).required().messages({
-    "string.empty": "SupplierId is required.",
+  productSize: Joi.string(),
+  star: Joi.number().min(0).default(0).optional().messages({
+    "number.min": "Star rating must be at least 0.",
   }),
+  flavors: Joi.array()
+    .items(
+      Joi.string()
+        .valid("Peanut Butter", "Vanilla", "Chocolate", "Unflavored")
+        .messages({
+          "any.only":
+            "Flavor must be one of 'Peanut Butter', 'Vanilla', 'Chocolate', or 'Unflavored'.",
+        })
+    )
+    .optional(),
 });
 
 // Validator for updating a product
@@ -104,4 +130,27 @@ export const updateProductValidator = Joi.object({
     .optional(),
   description: Joi.string().trim().optional(),
   supplierId: Joi.string().optional(),
+  label: Joi.string().trim().optional().messages({
+    "string.empty": "Label must be a valid string.",
+  }),
+  productSize: Joi.string()
+    .valid("small", "medium", "large")
+    .optional()
+    .messages({
+      "any.only": "Product size must be 'small', 'medium', or 'large'.",
+    }),
+  star: Joi.number().min(0).max(5).optional().messages({
+    "number.min": "Star rating must be at least 0.",
+    "number.max": "Star rating must not exceed 5.",
+  }),
+  flavors: Joi.array()
+    .items(
+      Joi.string()
+        .valid("Peanut Butter", "Vanilla", "Chocolate", "Unflavored")
+        .messages({
+          "any.only":
+            "Flavor must be one of 'Peanut Butter', 'Vanilla', 'Chocolate', or 'Unflavored'.",
+        })
+    )
+    .optional(),
 });

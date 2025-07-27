@@ -5,7 +5,7 @@ import CategogyService from '../Category/Categogy.service.mjs';
 import CategoryConstant from '../Category/Category.constant.mjs';
 import CategoryUtils from '../Category/Category.utils.mjs';
 
-class vendor_Controller {
+class Supplier_Controller {
   async createCategory(req = Request, res = Response) {
     try {
       let { name, description } = req.body;
@@ -50,4 +50,4 @@ class vendor_Controller {
   }
 }
 
-export default new vendor_Controller();
+export default new Supplier_Controller();

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router();
-import vendorController from './vendor.controller.mjs';
+import vendorController from './supplier.controller.mjs';
 import upload from '../../../utils/multerUtils.mjs';
 import authMiddleware from '../../../middleware/Auth.middleware.mjs';
 
@@ -13,4 +13,14 @@ router.post(
   vendorController.createCategory
 );
 
-export { router as vendorRoutes };
+
+// POST /api/v1/vendor/product/create
+// Only accessible by users with the "supplier" role
+router.post(
+  '/v1/vendor/product/create',
+  authMiddleware(['supplier']),
+  upload.array('images', 5), // Allow up to 5 images
+  vendorController.createProduct
+);
+
+export { router as Supplier_Routes };

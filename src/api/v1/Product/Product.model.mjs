@@ -43,10 +43,12 @@ const ProductSchema = new mongoose.Schema(
       enum: ['open', 'closed', 'expired'],
       default: 'open',
     },
-    image: {
-      type: String, // URL of the image
-      required: false,
-    },
+    images: [
+      {
+        type: String, // URL of the image
+        required: true,
+      },
+    ],
     description: {
       type: String,
       required: false,
